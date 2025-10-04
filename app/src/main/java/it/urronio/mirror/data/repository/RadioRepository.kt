@@ -4,4 +4,5 @@ import it.urronio.mirror.data.model.Radio
 
 interface RadioRepository {
     fun getAttachedRadios() : List<Radio>
+    fun getRadioByName(name: String): Radio
 }

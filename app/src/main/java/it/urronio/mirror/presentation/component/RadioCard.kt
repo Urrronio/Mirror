@@ -22,6 +22,7 @@ fun RadioCard(
     ) {
         Column {
             val dev = radio.device
+            Text(text = dev.deviceName)
             if (dev.manufacturerName != null && dev.productName != null) {
                 Text(text = dev.manufacturerName!!)
                 Text(text = dev.productName!!)
