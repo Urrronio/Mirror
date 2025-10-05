@@ -1,14 +1,25 @@
 package it.urronio.mirror.data.repository
 
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.usb.UsbConstants
+import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
+import android.widget.Toast
 import androidx.collection.mutableObjectListOf
+import androidx.core.content.ContextCompat
+import it.urronio.mirror.data.UsbPermissionReceiver
 import it.urronio.mirror.data.model.Radio
+import it.urronio.mirror.data.service.SerialService
+import kotlinx.coroutines.launch
 
 class RadioRepositoryImpl(
-    private val manager: UsbManager
+    private val manager: UsbManager,
+    private val context: Context
 ) : RadioRepository {
     override fun getAttachedRadios(): List<Radio> {
         return getCdcRadios()
@@ -94,5 +105,37 @@ class RadioRepositoryImpl(
             )
         }
         return cdcRadios
+    }
+    private val receiver: UsbPermissionReceiver = UsbPermissionReceiver { granted, device ->
+        if (granted && device != null) {
+            val i = Intent(
+                context,
+                SerialService::class.java
+            ).apply {
+                action = SerialService.ACTION_CONNECT
+                // putExtra(SerialService.EXTRA_DEVICE, device)
+                putExtra(SerialService.EXTRA_DEVICE_NAME, device.deviceName)
+                setPackage(context.packageName)
+            }
+            ContextCompat.startForegroundService(context, i)
+        }
+        context.unregisterReceiver(receiver)
+    }
+    override fun requestPermission(device: UsbDevice) {
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            IntentFilter(UsbPermissionReceiver.ACTION_USB_PERMISSION),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+        val i = Intent(UsbPermissionReceiver.ACTION_USB_PERMISSION)
+        i.setPackage(context.packageName) // explicit intent
+        val pi: PendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            i,
+            PendingIntent.FLAG_MUTABLE
+        )
+        manager.requestPermission(device, pi)
     }
 }

@@ -30,6 +30,7 @@ fun RadioScreen(
 ) {
     val viewmodel: RadioViewModel = koinViewModel(parameters = { parametersOf(name) })
     val radio: Radio? by viewmodel.radio.collectAsState()
+    val connected: Boolean by viewmodel.connected.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,7 +40,8 @@ fun RadioScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            // release connection
+                            // release connection ?
+                            // viewmodel.disconnect()
                             onNavigateUp()
                         }
                     ) {
@@ -55,9 +57,9 @@ fun RadioScreen(
         Column(
             modifier = Modifier.padding(padding)
         ) {
-            RadioBanner(radio = radio, open = false) {
+            RadioBanner(radio = radio, open = connected) {
                 // handle connect/disconnect button
-                viewmodel.requestPermission()
+                viewmodel.connect()
             }
         }
     }

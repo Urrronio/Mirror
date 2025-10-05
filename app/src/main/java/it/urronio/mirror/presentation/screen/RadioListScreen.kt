@@ -32,6 +32,7 @@ fun RadioListScreen(
 ) {
     val viewmodel: RadioListViewModel = koinViewModel()
     val radios: List<Radio> by viewmodel.radios.collectAsState()
+    val connected: String? by viewmodel.connected.collectAsState()
     val ctx = LocalContext.current
     Scaffold(
         modifier = modifier,
@@ -61,7 +62,8 @@ fun RadioListScreen(
         ) {
             items(radios) { radio ->
                 RadioCard(
-                    radio = radio
+                    radio = radio,
+                    connected = radio.device.deviceName == connected
                 ) {
                     Toast.makeText(ctx, "${radio.device.productName} clicked", Toast.LENGTH_SHORT)
                         .show()

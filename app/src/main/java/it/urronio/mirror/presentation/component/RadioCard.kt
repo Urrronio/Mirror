@@ -13,6 +13,7 @@ import it.urronio.mirror.data.model.Radio
 fun RadioCard(
     modifier: Modifier = Modifier,
     radio: Radio,
+    connected: Boolean,
     onClick: (UsbDevice) -> Unit
 ) {
     Card(
@@ -29,6 +30,8 @@ fun RadioCard(
             } else {
                 Text(text = dev.productId.toString())
             }
+            if (connected)
+                Text(text = "Connected")
         }
     }
 }
