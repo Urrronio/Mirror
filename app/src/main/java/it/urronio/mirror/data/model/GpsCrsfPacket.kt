@@ -4,7 +4,7 @@ data class GpsCrsfPacket(
     val latitude: Int,
     val longitude: Int,
     val groundSpeed: Short,
-    val groundCourse: Short,
+    val heading: Short,
     val altitude: Short,
-    val satellite: Byte
-)
+    val satellites: Byte
+) : CrsfPacket

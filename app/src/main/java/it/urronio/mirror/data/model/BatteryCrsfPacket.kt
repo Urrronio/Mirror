@@ -5,4 +5,4 @@ data class BatteryCrsfPacket(
     val current: Short,
     val usedCap: Int,
     val remBatt: Byte
-)
+) : CrsfPacket

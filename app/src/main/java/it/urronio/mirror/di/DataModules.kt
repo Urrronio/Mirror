@@ -13,6 +13,6 @@ val dataModules = module {
     single<ConnectionManager> { ConnectionManager() }
     single<RadioRepository> { RadioRepositoryImpl(manager = get(), context = androidContext()) }
     factory<SerialRepository> { params ->
-        SerialRepositoryImpl(manager = get(), context = androidApplication(), name = params.get(), connManager = get())
+        SerialRepositoryImpl(manager = get(), name = params.get())
     }
 }

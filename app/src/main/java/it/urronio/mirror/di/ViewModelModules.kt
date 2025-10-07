@@ -7,8 +7,8 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelModules = module {
-    viewModel { RadioListViewModel(repository = get(), connManager = get()) }
+    viewModel { RadioListViewModel(repository = get()) }
     viewModel { params ->
-        RadioViewModel(application = androidApplication(), repository = get(), name = params.get(), connManager = get())
+        RadioViewModel(application = androidApplication(), repository = get(), name = params.get(), manager = get())
     }
 }

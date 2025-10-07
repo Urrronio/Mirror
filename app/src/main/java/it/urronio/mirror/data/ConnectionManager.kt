@@ -1,22 +1,21 @@
 package it.urronio.mirror.data
 
+import android.app.Application
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
+import it.urronio.mirror.data.model.CrsfPacket
 import it.urronio.mirror.data.model.Telemetry
+import it.urronio.mirror.data.service.SerialService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class ConnectionManager {
-    private val _connectedDevice = MutableStateFlow<String?>(value = null)
-    val connectedDevice: StateFlow<String?> = _connectedDevice
-    private val _telemetry = MutableStateFlow<Telemetry?>(value = null)
-    val telemetry: StateFlow<Telemetry?> = _telemetry
-    fun setConnectedDevice(deviceName: String) {
-        _connectedDevice.value = deviceName
-    }
-    fun postData() {
-
-    }
-    fun clear() {
-        _connectedDevice.value = null
-        _telemetry.value = null
-    }
+class ConnectionManager(
+) {
 }

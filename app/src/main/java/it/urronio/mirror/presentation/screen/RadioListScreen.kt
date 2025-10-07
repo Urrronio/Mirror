@@ -1,5 +1,10 @@
 package it.urronio.mirror.presentation.screen
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
 import android.text.style.IconMarginSpan
 import android.widget.Toast
 import androidx.compose.foundation.layout.padding
@@ -15,11 +20,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import it.urronio.mirror.data.model.Radio
+import it.urronio.mirror.data.service.SerialService
 import it.urronio.mirror.presentation.component.RadioCard
 import it.urronio.mirror.presentation.viewmodel.RadioListViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -34,6 +42,32 @@ fun RadioListScreen(
     val radios: List<Radio> by viewmodel.radios.collectAsState()
     val connected: String? by viewmodel.connected.collectAsState()
     val ctx = LocalContext.current
+    val connection = remember {
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                name: ComponentName?,
+                service: IBinder?
+            ) {
+                val binder = service as SerialService.SerialBinder
+                viewmodel.onServiceBound(binder.service().connectedDevice)
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                viewmodel.onServiceUnbound()
+            }
+
+        }
+    }
+    DisposableEffect(key1 = Unit) {
+        ctx.bindService(
+            Intent(ctx, SerialService::class.java),
+            connection,
+            Context.BIND_AUTO_CREATE
+        )
+        onDispose {
+            ctx.unbindService(connection)
+        }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {

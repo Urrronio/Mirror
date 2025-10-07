@@ -106,36 +106,4 @@ class RadioRepositoryImpl(
         }
         return cdcRadios
     }
-    private val receiver: UsbPermissionReceiver = UsbPermissionReceiver { granted, device ->
-        if (granted && device != null) {
-            val i = Intent(
-                context,
-                SerialService::class.java
-            ).apply {
-                action = SerialService.ACTION_CONNECT
-                // putExtra(SerialService.EXTRA_DEVICE, device)
-                putExtra(SerialService.EXTRA_DEVICE_NAME, device.deviceName)
-                setPackage(context.packageName)
-            }
-            ContextCompat.startForegroundService(context, i)
-        }
-        context.unregisterReceiver(receiver)
-    }
-    override fun requestPermission(device: UsbDevice) {
-        ContextCompat.registerReceiver(
-            context,
-            receiver,
-            IntentFilter(UsbPermissionReceiver.ACTION_USB_PERMISSION),
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
-        val i = Intent(UsbPermissionReceiver.ACTION_USB_PERMISSION)
-        i.setPackage(context.packageName) // explicit intent
-        val pi: PendingIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            i,
-            PendingIntent.FLAG_MUTABLE
-        )
-        manager.requestPermission(device, pi)
-    }
 }
