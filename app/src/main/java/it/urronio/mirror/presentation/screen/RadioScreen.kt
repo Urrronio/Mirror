@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -45,6 +46,7 @@ fun RadioScreen(
     val radio: Radio? by viewmodel.radio.collectAsState()
     val telemetry: Telemetry? by viewmodel.telemetry.collectAsState()
     val connected: Boolean by viewmodel.connected.collectAsState()
+    val spoofing: Boolean by viewmodel.spoofing.collectAsState()
     val ctx = LocalContext.current
     val connection = remember {
         object : ServiceConnection {
@@ -98,6 +100,7 @@ fun RadioScreen(
             modifier = Modifier.padding(padding)
         ) {
             RadioBanner(
+                modifier = Modifier.fillMaxWidth(),
                 radio = radio,
                 open = connected
             ) {
@@ -105,7 +108,12 @@ fun RadioScreen(
             }
             if (telemetry != null)
                 TelemetryDashboard(
-                    telemetry = telemetry!!
+                    modifier = Modifier.fillMaxWidth(),
+                    telemetry = telemetry!!,
+                    isSpoofing = spoofing,
+                    onSpoofingToggleClick = {
+
+                    }
                 )
         }
     }

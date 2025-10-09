@@ -7,6 +7,8 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.text.style.IconMarginSpan
 import android.widget.Toast
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -90,19 +92,25 @@ fun RadioListScreen(
             }
         }
     ) { padding ->
-        LazyVerticalGrid(
-            modifier = Modifier.padding(padding),
-            columns = GridCells.Fixed(count = 2)
+        Box(
+            modifier = Modifier.padding(padding)
         ) {
-            items(radios) { radio ->
-                RadioCard(
-                    radio = radio,
-                    connected = radio.device.deviceName == connected
+            if (radios.isNotEmpty()) {
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxSize(),
+                    columns = GridCells.Fixed(count = 2)
                 ) {
-                    Toast.makeText(ctx, "${radio.device.productName} clicked", Toast.LENGTH_SHORT)
-                        .show()
-                    onNavigateToRadio(radio.device.deviceName)
+                    items(radios) { radio ->
+                        RadioCard(
+                            radio = radio,
+                            connected = radio.device.deviceName == connected
+                        ) {
+                            onNavigateToRadio(radio.device.deviceName)
+                        }
+                    }
                 }
+            } else {
+                Text(text = "No radios attached")
             }
         }
     }

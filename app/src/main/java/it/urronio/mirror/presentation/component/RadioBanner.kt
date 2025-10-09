@@ -1,6 +1,7 @@
 package it.urronio.mirror.presentation.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -22,7 +23,10 @@ fun RadioBanner(
     onClick: () -> Unit
 ) {
     val dev = radio?.device
-    Row {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
         Image(
             imageVector = Icons.Default.Radio,
             contentDescription = null

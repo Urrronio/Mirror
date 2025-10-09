@@ -5,7 +5,7 @@ import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
-import android.util.Log
+import android.location.LocationManager
 import it.urronio.mirror.data.CrsfParser
 import it.urronio.mirror.data.model.CrsfPacket
 import it.urronio.mirror.data.model.Radio
@@ -17,7 +17,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class SerialRepositoryImpl(
-    private val manager: UsbManager,
+    private val usbManager: UsbManager,
     private val name: String,
 ) : SerialRepository {
     private val _telemetry: MutableSharedFlow<CrsfPacket> = MutableSharedFlow(
@@ -31,7 +31,7 @@ class SerialRepositoryImpl(
     private val parser = CrsfParser()
 
     private fun getRadio(): Radio {
-        val device = manager.deviceList[name]
+        val device = usbManager.deviceList[name]
         var intIntf: UsbInterface? = null
         var bulkIntf: UsbInterface? = null
         var bulkIn: UsbEndpoint? = null
@@ -68,7 +68,7 @@ class SerialRepositoryImpl(
 
     override suspend fun open(): Boolean {
         radio = getRadio()
-        conn = manager.openDevice(radio!!.device)
+        conn = usbManager.openDevice(radio!!.device)
         if (conn == null) return false
         val claim = conn!!.claimInterface(
             radio!!.intIntf, true
