@@ -64,6 +64,7 @@ class RadioViewModel(
         if (device == name) {
             _connected.value = false
             _radio.value = null
+            // should trigger a navigation pop
         }
     }
 
@@ -74,11 +75,17 @@ class RadioViewModel(
 
     fun onServiceBound(
         device: StateFlow<String?>,
-        packet: SharedFlow<CrsfPacket?>
+        packet: SharedFlow<CrsfPacket?>,
+        mocking: StateFlow<Boolean>,
     ) {
         viewModelScope.launch {
             device.collect {
                 _connected.value = it == name
+            }
+        }
+        viewModelScope.launch {
+            mocking.collect {
+                _spoofing.value = it
             }
         }
 

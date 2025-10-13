@@ -23,7 +23,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import it.urronio.mirror.data.model.Radio
@@ -48,6 +50,7 @@ fun RadioScreen(
     val connected: Boolean by viewmodel.connected.collectAsState()
     val spoofing: Boolean by viewmodel.spoofing.collectAsState()
     val ctx = LocalContext.current
+    var serialService: SerialService? by remember { mutableStateOf(null) }
     val connection = remember {
         object : ServiceConnection {
             override fun onServiceConnected(
@@ -55,11 +58,16 @@ fun RadioScreen(
                 service: IBinder?
             ) {
                 val binder = service as SerialService.SerialBinder
-                val service = binder.service()
-                viewmodel.onServiceBound(device = service.connectedDevice, packet = service.telemetry)
+                serialService = binder.service()
+                viewmodel.onServiceBound(
+                    device = serialService!!.connectedDevice,
+                    packet = serialService!!.telemetry,
+                    mocking = serialService!!.isMocking
+                )
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
+                serialService = null
                 viewmodel.onServiceUnbound()
             }
 
@@ -112,7 +120,7 @@ fun RadioScreen(
                     telemetry = telemetry!!,
                     isSpoofing = spoofing,
                     onSpoofingToggleClick = {
-
+                        serialService?.spoof()
                     }
                 )
         }

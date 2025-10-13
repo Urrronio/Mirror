@@ -7,7 +7,9 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.text.style.IconMarginSpan
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -23,11 +25,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import it.urronio.mirror.data.model.Radio
 import it.urronio.mirror.data.service.SerialService
 import it.urronio.mirror.presentation.component.RadioCard
@@ -60,6 +65,9 @@ fun RadioListScreen(
 
         }
     }
+    LaunchedEffect(key1 = Unit) {
+        viewmodel.refreshRadios()
+    }
     DisposableEffect(key1 = Unit) {
         ctx.bindService(
             Intent(ctx, SerialService::class.java),
@@ -71,7 +79,7 @@ fun RadioListScreen(
         }
     }
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
@@ -92,13 +100,13 @@ fun RadioListScreen(
             }
         }
     ) { padding ->
-        Box(
-            modifier = Modifier.padding(padding)
-        ) {
             if (radios.isNotEmpty()) {
                 LazyVerticalGrid(
-                    modifier = Modifier.fillMaxSize(),
-                    columns = GridCells.Fixed(count = 2)
+                    modifier = Modifier.fillMaxSize().padding(paddingValues = padding),
+                    columns = GridCells.Adaptive(minSize = 160.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(radios) { radio ->
                         RadioCard(
@@ -110,9 +118,13 @@ fun RadioListScreen(
                     }
                 }
             } else {
-                Text(text = "No radios attached")
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues = padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "No radios attached")
+                }
             }
-        }
     }
 
 }

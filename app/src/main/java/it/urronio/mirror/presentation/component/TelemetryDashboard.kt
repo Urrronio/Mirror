@@ -1,15 +1,38 @@
 package it.urronio.mirror.presentation.component
 
+import android.R
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.GpsOff
+import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Power
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import it.urronio.mirror.data.model.Telemetry
+import java.nio.file.WatchEvent
 
 @Composable
 fun TelemetryDashboard(
@@ -20,69 +43,107 @@ fun TelemetryDashboard(
 ) {
     Column(
         modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) { // battery row
-            Card {
-                Column {
-                    Text(text = "Battery voltage")
-                    Text(text = telemetry.battery?.voltage?.toString() ?: "?")
-                }
-            }
-            Card {
-                Column {
-                    Text(text = "Used capacity")
-                    Text(text = telemetry.battery?.usedCap?.toString() ?: "?")
-                }
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) { // gps row
-            Card {
-                Column {
-                    Text(text = "Latitude")
-                    Text(text = telemetry.gps?.latitude?.toString() ?: "?")
-                }
-            }
-            Card {
-                Column {
-                    Text(text = "Longitude")
-                    Text(text = telemetry.gps?.longitude?.toString() ?: "?")
-                }
-            }
-            Card {
-                Column {
-                    Text(text = "Altitude")
-                    Text(text = telemetry.gps?.altitude?.toString() ?: "?")
+        Card(
+            modifier = Modifier.padding(16.dp),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(text = "Battery", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(imageVector = Icons.Default.ElectricBolt, contentDescription = "Voltage", tint = MaterialTheme.colorScheme.primary)
+                        Text(text = "Voltage", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "${telemetry.battery?.voltage ?: '?'} V", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(imageVector = Icons.Default.Power, contentDescription = "Used capacity", tint = MaterialTheme.colorScheme.primary)
+                        Text(text = "Used Capacity", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "${telemetry.battery?.usedCap ?: '?'} mAh", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
-        Row(
+        Card(
+            modifier = Modifier.padding(16.dp),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(text = "GPS", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Coordinates", tint = MaterialTheme.colorScheme.primary)
+                        Text(text = "Latitude", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "${telemetry.gps?.latitude ?: '?'}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = "Longitude", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "${telemetry.gps?.longitude ?: '?'}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(imageVector = Icons.Default.Height, contentDescription = "Altitude", tint = MaterialTheme.colorScheme.primary)
+                        Text(text = "Altitude", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "${telemetry.gps?.altitude ?: '?'} m", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) { // map row
-            Column {
-                Row {
-                    Text(text = "Gps spoofing")
-                    Button(
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "GPS Spoofing", style = MaterialTheme.typography.titleMedium)
+                    IconButton(
                         onClick = {
                             onSpoofingToggleClick()
                         }
                     ) {
-                        if (isSpoofing)
-                            Text(text = "ON")
-                        else
-                            Text(text = "OFF")
+                        Icon(
+                            imageVector = if (isSpoofing) {
+                                Icons.Default.GpsOff
+                            } else {
+                                Icons.Default.GpsFixed
+                            },
+                            contentDescription = null
+                        )
                     }
                 }
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "This will contain the map")
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+                Card {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "This will contain the map")
+                    }
                 }
             }
         }

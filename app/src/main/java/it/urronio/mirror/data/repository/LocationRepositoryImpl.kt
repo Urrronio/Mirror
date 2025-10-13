@@ -5,6 +5,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.Build
+import android.util.Log
 
 class LocationRepositoryImpl(
     private val locationManager: LocationManager
@@ -37,6 +38,8 @@ class LocationRepositoryImpl(
             }
             locationManager.setTestProviderEnabled(provider, true)
         } catch (e: SecurityException) {
+            // User has not selected the app in developer settings
+            Log.d("LocationRepositoryImpl", e.message ?: "start")
             return false
         }
         return true
@@ -49,6 +52,7 @@ class LocationRepositoryImpl(
             }
         } catch (e: SecurityException) {
 
+            Log.d("LocationRepositoryImpl", e.message ?: "setLocation")
         }
     }
 
@@ -57,7 +61,9 @@ class LocationRepositoryImpl(
             locationManager.setTestProviderEnabled(provider, false)
             locationManager.removeTestProvider(provider)
         } catch (e: SecurityException) {
-
+            Log.d("LocationRepositoryImpl", e.message ?: "stop")
+        } catch (e: IllegalArgumentException) {
+            Log.d("LocationRepositoryImpl", e.message ?: "stop")
         }
     }
 

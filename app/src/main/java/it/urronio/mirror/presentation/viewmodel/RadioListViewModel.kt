@@ -6,6 +6,7 @@ import it.urronio.mirror.data.ConnectionManager
 import it.urronio.mirror.data.model.Radio
 import it.urronio.mirror.data.model.Telemetry
 import it.urronio.mirror.data.repository.RadioRepository
+import it.urronio.mirror.data.service.SerialService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,15 +15,11 @@ import java.util.Collections.emptyList
 
 class RadioListViewModel(
     private val repository: RadioRepository,
-    // private val connManager: ConnectionManager
 ) : ViewModel() {
     private val _radios : MutableStateFlow<List<Radio>> = MutableStateFlow(emptyList())
     val radios : StateFlow<List<Radio>> = _radios.asStateFlow()
     private val _connected: MutableStateFlow<String?> = MutableStateFlow(value = null)
     val connected: StateFlow<String?> = _connected.asStateFlow()
-    init {
-        refreshRadios()
-    }
     fun refreshRadios() {
         _radios.value = repository.getAttachedRadios()
     }

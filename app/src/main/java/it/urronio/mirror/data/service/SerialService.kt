@@ -14,7 +14,6 @@ import androidx.core.app.NotificationCompat
 import it.urronio.mirror.data.model.CrsfPacket
 import it.urronio.mirror.data.model.GpsCrsfPacket
 import it.urronio.mirror.data.repository.LocationRepository
-import it.urronio.mirror.data.repository.LocationRepositoryImpl
 import it.urronio.mirror.data.repository.SerialRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -108,16 +107,22 @@ class SerialService : Service() {
                 readJob?.cancel()
                 forwardJob?.cancel()
                 mockJob?.cancel()
+                stopSpoofing()
                 stopForeground(STOP_FOREGROUND_REMOVE)
             }
         }
         return START_NOT_STICKY
     }
 
-    fun startMocking() {
+    fun spoof() {
+        if (_isMocking.value) stopSpoofing()
+        else startSpoofing()
+    }
+    private fun startSpoofing() {
+        // should check whether a connection with the device is active
         if (location.start()) _isMocking.value = true
     }
-    fun stopMocking() {
+    private fun stopSpoofing() {
         location.stop()
         _isMocking.value = false
     }
@@ -126,6 +131,7 @@ class SerialService : Service() {
         super.onDestroy()
         serial.close()
         _connectedDevice.value = null
+        stopSpoofing()
         scope.cancel()
     }
 
