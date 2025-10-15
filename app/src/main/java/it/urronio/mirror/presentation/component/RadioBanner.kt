@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.urronio.mirror.data.model.Radio
 
@@ -54,14 +55,16 @@ fun RadioBanner(
                 Column {
                     Text(
                         text = dev?.productName ?: "Unknown",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (radio != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        // color = if (radio != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = if (open) "Connected" else "Disconnected",
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (open) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
+                        // color = if (open) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -74,7 +77,7 @@ fun RadioBanner(
                 Icon(
                     imageVector = if (open) Icons.Default.UsbOff else Icons.Default.Usb,
                     contentDescription = null,
-                    tint = if (open) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
+                    // tint = if (open) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

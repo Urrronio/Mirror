@@ -3,7 +3,9 @@ package it.urronio.mirror.presentation.screen
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.hardware.usb.UsbManager
 import android.os.IBinder
 import android.text.style.IconMarginSpan
 import android.widget.Toast
@@ -33,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
+import it.urronio.mirror.data.UsbDeviceDetachedReceiver
 import it.urronio.mirror.data.model.Radio
 import it.urronio.mirror.data.service.SerialService
 import it.urronio.mirror.presentation.component.RadioCard
@@ -49,6 +53,11 @@ fun RadioListScreen(
     val radios: List<Radio> by viewmodel.radios.collectAsState()
     val connected: String? by viewmodel.connected.collectAsState()
     val ctx = LocalContext.current
+    val detachedReceiver: UsbDeviceDetachedReceiver = remember {
+        UsbDeviceDetachedReceiver { device ->
+            viewmodel.refreshRadios()
+        }
+    }
     val connection = remember {
         object : ServiceConnection {
             override fun onServiceConnected(
@@ -74,8 +83,10 @@ fun RadioListScreen(
             connection,
             Context.BIND_AUTO_CREATE
         )
+        ctx.registerReceiver(detachedReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
         onDispose {
             ctx.unbindService(connection)
+            ctx.unregisterReceiver(detachedReceiver)
         }
     }
     Scaffold(

@@ -1,5 +1,6 @@
 package it.urronio.mirror.data
 
+import android.util.Log
 import it.urronio.mirror.data.model.AttitudeCrsfPacket
 import it.urronio.mirror.data.model.BatteryCrsfPacket
 import it.urronio.mirror.data.model.ChannelsCrsfPacket
@@ -9,6 +10,7 @@ import it.urronio.mirror.data.model.RemoteRelatedCrsfPacket
 import java.nio.ByteBuffer
 import java.util.LinkedList
 import java.util.Queue
+import kotlin.experimental.or
 import kotlin.random.Random
 
 class CrsfParser {
@@ -52,6 +54,7 @@ class CrsfParser {
                 packets.add(deconstructFrame(barr = frame))
             } catch (e: Exception) { // implement custom exception or change type to nullable and perform null-check
                 // unsupported packet
+                Log.d("Parser", e.message ?: "An error occurred in parsing the frame")
             }
         }
     }
@@ -59,6 +62,7 @@ class CrsfParser {
         val type = barr[0]
         return when (type) {
             0x02.toByte() -> { // GPS
+                Log.d("Parser", "GPS packet: ${barr.joinToString(" ")}")
                 GpsCrsfPacket(
                     latitude = ByteBuffer.wrap(barr, 1, 4).int,
                     longitude = ByteBuffer.wrap(barr, 5 ,4).int,
@@ -69,14 +73,20 @@ class CrsfParser {
                 )
             }
             0x08.toByte() -> { // Battery
+                Log.d("Parser", "Battery packet: ${barr.joinToString(" ")}")
+                val b5 = barr[5].toInt() and 0xFF
+                val b6 = barr[6].toInt() and 0xFF
+                val b7 = barr[7].toInt() and 0xFF
+                val usedCap = b5 or (b6 shl 8) or (b7 shl 16)
                 BatteryCrsfPacket(
                     voltage = ByteBuffer.wrap(barr, 1, 2).short,
                     current = ByteBuffer.wrap(barr, 3, 2).short,
-                    usedCap = ByteBuffer.wrap(barr, 5, 3).int,
-                    remBatt = ByteBuffer.wrap(barr, 8, 1).get()
+                    usedCap = usedCap,
+                    remBatt = barr[8]
                 )
             }
             0x1E.toByte() -> { // Attitude
+                Log.d("Parser", "Attitude packet: ${barr.joinToString(" ")}")
                 AttitudeCrsfPacket(
                     pitch = ByteBuffer.wrap(barr, 1, 2).short,
                     roll = ByteBuffer.wrap(barr, 3, 2).short,
@@ -84,6 +94,7 @@ class CrsfParser {
                 )
             }
             0x16.toByte() -> { // Channels
+                Log.d("Parser", "Channels packet: ${barr.joinToString(" ")}")
                 val chs = ShortArray(size = 16)
                 var offset = 0
                 for (i in 0 until 16) {

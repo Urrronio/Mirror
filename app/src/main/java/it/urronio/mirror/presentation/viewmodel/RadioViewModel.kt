@@ -60,17 +60,16 @@ class RadioViewModel(
         }
         application.unregisterReceiver(permissionReceiver)
     }
-    private val detachedReceiver: UsbDeviceDetachedReceiver = UsbDeviceDetachedReceiver { device ->
+
+    init {
+        _radio.value = repository.getRadioByName(name = name)
+    }
+    fun detached(device: String) {
         if (device == name) {
             _connected.value = false
             _radio.value = null
             // should trigger a navigation pop
         }
-    }
-
-    init {
-        _radio.value = repository.getRadioByName(name = name)
-        application.registerReceiver(detachedReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
     }
 
     fun onServiceBound(
@@ -90,34 +89,38 @@ class RadioViewModel(
         }
 
         viewModelScope.launch {
-            packet.collectLatest {
+            packet.collect {
                 when (it) {
                     is GpsCrsfPacket -> {
+                        Log.d("RadioViewModel", "Gps packed received")
                         _telemetry.value = _telemetry.value?.copy(
                             gps = it
                         )
                     }
 
                     is BatteryCrsfPacket -> {
+                        Log.d("RadioViewModel", "Battery packed received")
                         _telemetry.value = _telemetry.value?.copy(
                             battery = it
                         )
                     }
 
                     is AttitudeCrsfPacket -> {
+                        Log.d("RadioViewModel", "Attitude packed received")
                         _telemetry.value = _telemetry.value?.copy(
                             attitude = it
                         )
                     }
 
                     is ChannelsCrsfPacket -> {
+                        Log.d("RadioViewModel", "Channels packed received")
                         _telemetry.value = _telemetry.value?.copy(
                             channels = it
                         )
                     }
 
                     is RemoteRelatedCrsfPacket -> {
-                        Log.d("RadioViewModel", "Remote related packed received")
+                        // Log.d("RadioViewModel", "Remote related packed received")
                     }
                 }
             }
@@ -172,7 +175,6 @@ class RadioViewModel(
         super.onCleared()
         try {
             application.unregisterReceiver(permissionReceiver)
-            application.unregisterReceiver(detachedReceiver)
         } catch (e: IllegalArgumentException) {
             Log.d("RadioViewModel", "Tried to unregister a non-registered receiver")
         }

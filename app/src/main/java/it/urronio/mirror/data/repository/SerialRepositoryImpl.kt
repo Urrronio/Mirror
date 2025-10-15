@@ -6,8 +6,13 @@ import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
 import android.location.LocationManager
+import android.util.Log
 import it.urronio.mirror.data.CrsfParser
+import it.urronio.mirror.data.model.AttitudeCrsfPacket
+import it.urronio.mirror.data.model.BatteryCrsfPacket
+import it.urronio.mirror.data.model.ChannelsCrsfPacket
 import it.urronio.mirror.data.model.CrsfPacket
+import it.urronio.mirror.data.model.GpsCrsfPacket
 import it.urronio.mirror.data.model.Radio
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,7 +26,8 @@ class SerialRepositoryImpl(
     private val name: String,
 ) : SerialRepository {
     private val _telemetry: MutableSharedFlow<CrsfPacket> = MutableSharedFlow(
-        replay = 1,
+        replay = 0,
+        extraBufferCapacity = 64,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     override val telemetry: SharedFlow<CrsfPacket>
@@ -108,6 +114,16 @@ class SerialRepositoryImpl(
                 parser.put(bytes = barr.copyOf(read))
                 parseLoop@ while(true) {
                     val p = parser.nextPacket() ?: break@parseLoop
+                    Log.d(
+                        "SerialRepositoryImpl",
+                        when (p) {
+                            is BatteryCrsfPacket -> "BatteryPacket"
+                            is AttitudeCrsfPacket -> "AttitudePacket"
+                            is GpsCrsfPacket -> "GpsPacket"
+                            is ChannelsCrsfPacket -> "ChannelsPacket"
+                            else -> "Other packet"
+                        }
+                    )
                     _telemetry.tryEmit(value = p)
                 }
             }

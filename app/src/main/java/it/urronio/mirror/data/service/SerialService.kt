@@ -10,7 +10,11 @@ import android.content.pm.ServiceInfo
 import android.location.Location
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import it.urronio.mirror.data.model.AttitudeCrsfPacket
+import it.urronio.mirror.data.model.BatteryCrsfPacket
+import it.urronio.mirror.data.model.ChannelsCrsfPacket
 import it.urronio.mirror.data.model.CrsfPacket
 import it.urronio.mirror.data.model.GpsCrsfPacket
 import it.urronio.mirror.data.repository.LocationRepository
@@ -44,7 +48,8 @@ class SerialService : Service() {
     private val _connectedDevice: MutableStateFlow<String?> = MutableStateFlow(value = null)
     val connectedDevice: StateFlow<String?> = _connectedDevice.asStateFlow()
     private val _telemetry: MutableSharedFlow<CrsfPacket?> = MutableSharedFlow(
-        replay = 1,
+        replay = 0,
+        extraBufferCapacity = 64,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     private val _isMocking: MutableStateFlow<Boolean> = MutableStateFlow(value = false)
@@ -76,7 +81,17 @@ class SerialService : Service() {
                         serial.read()
                     }
                     forwardJob = scope.launch {
-                        serial.telemetry.collectLatest {
+                        serial.telemetry.collect {
+                            Log.d(
+                                "SerialService",
+                                when (it) {
+                                    is BatteryCrsfPacket -> "BatteryPacket"
+                                    is AttitudeCrsfPacket -> "AttitudePacket"
+                                    is GpsCrsfPacket -> "GpsPacket"
+                                    is ChannelsCrsfPacket -> "ChannelsPacket"
+                                    else -> "Other packet"
+                                }
+                            )
                             _telemetry.tryEmit(value = it)
                         }
                     }
@@ -89,18 +104,22 @@ class SerialService : Service() {
                                 it as GpsCrsfPacket
                             }
                             .collectLatest {
-                                location.setLocation(
+                                /* location.setLocation(
+                                    // illegalargumentexception missing timestamp or accuracy on location object
                                     Location(location.provider).apply {
                                         latitude = it.latitude.toDouble()
                                         longitude = it.longitude.toDouble()
                                         altitude = it.altitude.toDouble()
                                     }
-                                )
+                                ) */
                             }
                     }
                 }
             }
-
+            ACTION_SPOOF -> {
+                // both starts connection and spoofing
+                val name: String? = intent.getStringExtra(EXTRA_DEVICE_NAME)
+            }
             ACTION_DISCONNECT -> {
                 serial.close()
                 _connectedDevice.value = null
@@ -114,12 +133,14 @@ class SerialService : Service() {
         return START_NOT_STICKY
     }
 
-    fun spoof() {
+    fun spoof(device: String) {
         if (_isMocking.value) stopSpoofing()
-        else startSpoofing()
+        else startSpoofing(device = device)
     }
-    private fun startSpoofing() {
-        // should check whether a connection with the device is active
+    private fun startSpoofing(
+        device: String
+    ) {
+        if (device != _connectedDevice.value) return
         if (location.start()) _isMocking.value = true
     }
     private fun stopSpoofing() {
@@ -161,6 +182,7 @@ class SerialService : Service() {
 
     companion object {
         const val ACTION_CONNECT = "it.urronio.mirror.action.CONNECT"
+        const val ACTION_SPOOF = "it.urronio.mirror.action.SPOOF"
         const val ACTION_DISCONNECT = "it.urronio.mirror.action.DISCONNECT"
         const val EXTRA_DEVICE_NAME = "it.urronio.mirror.extra.DEVICE_NAME"
         private const val NOTIFICATION_ID = 1

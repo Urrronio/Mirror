@@ -22,7 +22,8 @@ class RadioRepositoryImpl(
     private val context: Context
 ) : RadioRepository {
     override fun getAttachedRadios(): List<Radio> {
-        return getCdcRadios()
+        // return getCdcRadios()
+        return getEdgetxRadios()
     }
 
     override fun getRadioByName(name: String): Radio {
@@ -65,7 +66,7 @@ class RadioRepositoryImpl(
         )
     }
 
-    private fun getCdcRadios(): List<Radio> {
+    /* private fun getCdcRadios(): List<Radio> {
         val devices = manager.deviceList
         val cdcRadios: MutableList<Radio> = mutableListOf()
         for (device in devices.values) {
@@ -105,5 +106,48 @@ class RadioRepositoryImpl(
             )
         }
         return cdcRadios
+    } */
+    fun getEdgetxRadios() : List<Radio> {
+        val devices = manager.deviceList.values
+        // devicehunt.com
+        val stmRadios = devices.filter { it.vendorId == 0x0483 } // should also check for productId == 0x5740
+        val radios = mutableListOf<Radio>()
+        for (device in stmRadios) {
+            var intIntf: UsbInterface? = null
+            var bulkIntf: UsbInterface? = null
+            var bulkIn: UsbEndpoint? = null
+            var bulkOut: UsbEndpoint? = null
+            for (i in 0 until device.interfaceCount) {
+                if (intIntf != null && bulkIntf != null) break
+                val intf = device.getInterface(i)
+                if (intIntf == null && intf.interfaceClass == UsbConstants.USB_CLASS_COMM && intf.interfaceSubclass == 0x2) {
+                    intIntf = intf
+                }
+                if (bulkIntf == null && intf.interfaceClass == UsbConstants.USB_CLASS_CDC_DATA) {
+                    bulkIntf = intf
+                    for (j in 0 until intf.endpointCount) {
+                        if (bulkIn != null && bulkOut != null) break
+                        val enp = intf.getEndpoint(j)
+                        if (enp.direction == UsbConstants.USB_DIR_IN && enp.type == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                            bulkIn = enp
+                        }
+                        if (enp.direction == UsbConstants.USB_DIR_OUT && enp.type == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                            bulkOut = enp
+                        }
+                    }
+                }
+            }
+            if (intIntf == null || bulkIntf == null || bulkIn == null || bulkOut == null) continue
+            radios.add(
+                Radio(
+                    device = device,
+                    intIntf = intIntf,
+                    bulkIntf = bulkIntf,
+                    bulkIn = bulkIn,
+                    bulkOut = bulkOut
+                )
+            )
+        }
+        return radios
     }
 }

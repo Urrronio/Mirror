@@ -3,7 +3,9 @@ package it.urronio.mirror.presentation.screen
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.hardware.usb.UsbManager
 import android.os.IBinder
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import it.urronio.mirror.data.UsbDeviceDetachedReceiver
 import it.urronio.mirror.data.model.Radio
 import it.urronio.mirror.data.model.Telemetry
 import it.urronio.mirror.data.service.SerialService
@@ -51,6 +54,11 @@ fun RadioScreen(
     val spoofing: Boolean by viewmodel.spoofing.collectAsState()
     val ctx = LocalContext.current
     var serialService: SerialService? by remember { mutableStateOf(null) }
+    val detachedReceiver: UsbDeviceDetachedReceiver = remember {
+        UsbDeviceDetachedReceiver { device ->
+            viewmodel.detached(device)
+        }
+    }
     val connection = remember {
         object : ServiceConnection {
             override fun onServiceConnected(
@@ -79,8 +87,10 @@ fun RadioScreen(
             connection,
             Context.BIND_AUTO_CREATE
         )
+        ctx.registerReceiver(detachedReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
         onDispose {
             ctx.unbindService(connection)
+            ctx.unregisterReceiver(detachedReceiver)
         }
     }
     Scaffold(
@@ -120,7 +130,7 @@ fun RadioScreen(
                     telemetry = telemetry!!,
                     isSpoofing = spoofing,
                     onSpoofingToggleClick = {
-                        serialService?.spoof()
+                        // serialService?.spoof()
                     }
                 )
         }

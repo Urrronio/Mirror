@@ -30,7 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import it.urronio.mirror.data.model.GpsCrsfPacket
 import it.urronio.mirror.data.model.Telemetry
 import java.nio.file.WatchEvent
 
@@ -48,7 +50,7 @@ fun TelemetryDashboard(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(
@@ -65,18 +67,25 @@ fun TelemetryDashboard(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(imageVector = Icons.Default.ElectricBolt, contentDescription = "Voltage", tint = MaterialTheme.colorScheme.primary)
                         Text(text = "Voltage", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(text = "${telemetry.battery?.voltage ?: '?'} V", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        val voltage = telemetry.battery?.voltage?.let {
+                            "${it / 10.0f} V"
+                        } ?: "? V"
+                        Text(text = voltage, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(imageVector = Icons.Default.Power, contentDescription = "Used capacity", tint = MaterialTheme.colorScheme.primary)
                         Text(text = "Used Capacity", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(text = "${telemetry.battery?.usedCap ?: '?'} mAh", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        val usedCap =
+                            telemetry.battery?.usedCap?.let {
+                                "${it / 10.0f} mAh"
+                            } ?: "? mAh"
+                        Text(text = usedCap, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
         Card(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(
@@ -107,7 +116,6 @@ fun TelemetryDashboard(
             }
         }
         Card(
-            modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(
@@ -148,4 +156,13 @@ fun TelemetryDashboard(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun TelemetryDashboardPreview() {
+    TelemetryDashboard(
+        telemetry = Telemetry(),
+        isSpoofing = false
+    ) { }
 }
