@@ -49,13 +49,15 @@ fun RadioCard(
         ) {
             if (connected) {
                 Box(
-                    modifier = Modifier.fillMaxHeight()
+                    modifier = Modifier
+                        .fillMaxHeight()
                         .width(6.dp)
                         .background(Color(0xFF4CAF50))
                 )
             }
             Row(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
                     .weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -71,22 +73,21 @@ fun RadioCard(
                 ) {
                     val dev = radio.device
                     val name = dev.manufacturerName ?: "Unknown device"
-                    Text(text = name,
+                    val prodName = dev.productName
+                    Text(
+                        text = prodName ?: "Product ID: ${dev.productId}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis)
-                    val prodName = dev.productName
-                    if (prodName != null) {
-                        Text(text = prodName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis)
-                    } else {
-                        Text(text = "Product ID: ${dev.productId}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
                 }
             }
         }

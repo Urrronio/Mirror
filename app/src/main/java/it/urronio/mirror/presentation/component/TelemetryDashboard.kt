@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.GpsFixed
@@ -32,8 +34,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.dellisd.spatialk.geojson.Position
 import it.urronio.mirror.data.model.GpsCrsfPacket
 import it.urronio.mirror.data.model.Telemetry
+import org.maplibre.compose.camera.CameraPosition
+import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.map.GestureOptions
+import org.maplibre.compose.map.MapOptions
+import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.style.BaseStyle
 import java.nio.file.WatchEvent
 
 @Composable
@@ -43,10 +52,27 @@ fun TelemetryDashboard(
     isSpoofing: Boolean,
     onSpoofingToggleClick: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+    val cameraState = rememberCameraState(
+        /* firstPosition = CameraPosition(
+            target = Position(
+                longitude = 9.12,
+                latitude = 39.22
+            )
+        ) */
+    )
+    cameraState.position = CameraPosition(
+        // Cagliari
+        target = Position(
+            longitude = 9.12,
+            latitude = 39.22
+        )
+    )
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
@@ -150,7 +176,45 @@ fun TelemetryDashboard(
                         modifier = Modifier.fillMaxWidth().height(200.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "This will contain the map")
+                        val style = """
+                            {
+                            "version": 8,
+                            "name": "OpenStreetMap Raster Tiles",
+                            "sources": {
+                                    "osm-raster-source": {
+                                        "type": "raster",
+                                        "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                                        "tileSize": 256,
+                                        "maxzoom": 19,
+                                        "attribution": "OpenStreetMap contributors"
+                                    }
+                                },
+                            "layers": [
+                                    {
+                                    "id": "osm-raster-layer",
+                                    "type": "raster",
+                                    "source": "osm-raster-source"
+                                    }
+                                ]
+                            }
+                        """.trimIndent()
+                        val gestures = GestureOptions(
+                            isRotateEnabled = false,
+                            isScrollEnabled = false,
+                            isTiltEnabled = false,
+                            isZoomEnabled = false,
+                            isDoubleTapEnabled = false,
+                            isQuickZoomEnabled = false,
+                        )
+                        val options = MapOptions(gestureOptions = gestures)
+                        MaplibreMap(
+                            modifier = Modifier.fillMaxSize(),
+                            baseStyle = BaseStyle.Json(json = style),
+                            cameraState = cameraState,
+                            options = options
+                        ) {
+
+                        }
                     }
                 }
             }

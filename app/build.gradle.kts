@@ -63,4 +63,5 @@ dependencies {
     implementation(libs.koin.androidx.compose.navigation)
     implementation(libs.navigation.compose)
     implementation(libs.material.icons.extended)
+    implementation(libs.maplibre.compose)
 }
